@@ -1,0 +1,15 @@
+<?php
+
+class Extent {
+
+    public $pointMax;
+    public $pointMin;
+    /*
+    public $xmax;
+    public $ymax;
+    public $xmin;
+    public $ymin;
+    */
+}
+
+?>

@@ -1,0 +1,131 @@
+<head>
+    <title>Visualização de poligonos no canvas do HTML5</title>
+
+    <script type='text/javascript' src='js/lib/jquery-1.6.2.js'></script>
+    <script type='text/javascript' src='js/lib/jquery.selectboxes.min.js'></script>
+    <script type='text/javascript' src='js/src/functions.js'></script>
+
+    <link rel="stylesheet" type="text/css" media="screen" href="include/css/style.css" />
+
+    <script type="text/javascript">
+
+        onLoadIndex("Norte");
+        onLoadIndex("Centro-Oeste");
+        onLoadIndex("Nordeste");
+        onLoadIndex("Sudeste");
+        onLoadIndex("Sul"); 
+        
+        var extent = new Extent();
+        var isMouseDown = false;
+
+        $(document).ready(function (e) {
+            
+            $('canvas').click(function (e){
+
+                if($('input[type=radio]:checked').attr("value") == 'select'){
+                    select(getCanvasPoint(e));
+                }
+                
+                if($('input[type=radio]:checked').attr("value") == 'zoom'){
+                     zoom(getCanvasPoint(e));
+                }                                
+            });
+            
+            
+            $('canvas').mousedown(function (e){
+                if($('input[type=radio]:checked').attr("value") == 'zoomExtent'){
+                    isMouseDown = true;
+                    extent.max = getCanvasPoint(e);
+                }
+            });
+            
+
+            $('canvas').mousemove(function (e){
+                if(isMouseDown){
+                    $('#zoomBox').show();
+                    $('#zoomBox').css('width','0px');
+                    $('#zoomBox').css('height','0px');
+
+                    var size = getCanvasPoint(e);
+                    
+                    if(extent.max.x < size.x && extent.max.y < size.y){
+                        $('#zoomBox').css('margin-top',extent.max.y);
+                        $('#zoomBox').css('margin-left',extent.max.x);     
+
+                        $('#zoomBox').css('width',(size.x-extent.max.x));
+                        $('#zoomBox').css('height',(size.y-extent.max.y));
+                    }
+                }
+            });
+
+            
+            $('canvas').mouseup(function (e){               
+                if($('input[type=radio]:checked').attr("value") == 'zoomExtent'){   
+                    isMouseDown = false;
+                    extent.min = getCanvasPoint(e);
+                    zoomExtent(extent);
+                    $('#zoomBox').hide();
+
+                }
+            });
+            
+            
+            $('#previous').click(function (e){
+                drawHistory();
+            })
+            
+        });
+
+
+
+    </script>
+
+</head>
+
+<body> 
+    <h3>Visualização de poligonos no canvas do HTML5</h3>
+
+    <!--
+    Regi&otilde;es:
+    <input type="button" value="Norte" id="Norte" onclick="onLoadIndex(this.id)" />
+    <input type="button" value="Nordeste" id="Nordeste" onclick="onLoadIndex(this.id)" />
+    <input type="button" value="Sudeste" id="Sudeste" onclick="onLoadIndex(this.id)" />
+    <input type="button" value="Sul" id="Sul" onclick="onLoadIndex(this.id)" />
+    <input type="button" value="Centro-Oeste" id="Centro-Oeste" onclick="onLoadIndex(this.id)" />
+    -->
+
+
+    <div id="loading" class="loading" style="display:none">
+        <div class="image"></div>
+    </div>
+    <div style="width:500px">
+    <div class="zoomBox" id="zoomBox"></div>
+    <canvas id="canvas" width="500" height="469"></canvas>
+    </div>
+    <ul>
+        <li><input type="button" name="previous" id="previous" value="Tela Anterior" /></li>
+        <li>
+            <input type="radio" name="function" value="select" /> Marcar Município
+        </li>
+        <li>
+            <input type="radio" name="function" value="zoom" /> Ver Município
+        </li>
+        <li>
+            <input type="radio" name="function" value="zoomExtent" /> Zoom Por Seleção
+        </li>
+        <li>
+            <input type="radio" name="function" value="zoomIn" /> Zoom In
+        </li>
+        <li>
+            <input type="radio" name="function" value="zoomOut" /> Zoom Out
+        </li>
+    </ul>  
+    
+     
+    <DIV ID="rubberBand"></DIV>
+
+
+</body>
+
+</html>
+

@@ -1,0 +1,100 @@
+<?php
+
+include_once("../model/dao.multipolygon.php");
+
+if ($_REQUEST['func'] == 'list') {
+    echo json_encode(MultiPolygonDAO::getInstance()->listByRegion($_REQUEST['region']));
+}
+
+if ($_REQUEST['func'] == 'selectByPoint') {
+
+    $point = new Point();
+    $point->x = $_REQUEST['point']['x'];
+    $point->y = $_REQUEST['point']['y'];
+
+    $canvasExtent = $_REQUEST['extent'];
+
+    if($_REQUEST['extent']){            
+        $extent = formatExtent($canvasExtent);
+    }else{
+        $extent = null;
+    }
+    echo json_encode(MultiPolygonDAO::getInstance()->selectByPoint($point, $extent));
+}
+
+if ($_REQUEST['func'] == 'zoomByPoint') {
+
+    $point = new Point();
+    $point->x = $_REQUEST['point']['x'];
+    $point->y = $_REQUEST['point']['y'];
+
+    $canvasExtent = $_REQUEST['extent'];
+    $extent = formatExtent($canvasExtent);
+    
+    echo json_encode(MultiPolygonDAO::getInstance()->zoomByPoint($point, $extent));
+}
+
+if ($_REQUEST['func'] == 'zoomByExtent') {
+
+    $zoomExtent = $_REQUEST['zoomExtent'];
+    $canvasExtent = $_REQUEST['extent'];
+
+    $max = new Point();
+    $max->x = $zoomExtent[max][x];
+    $max->y = $zoomExtent[max][y];
+
+    $min = new Point();
+    $min->x = $zoomExtent[min][x];
+    $min->y = $zoomExtent[min][y];
+
+    //conversão pra pegar os pontos em qualquer diagonal que se faça a seleção
+    if ($max->x < $min->x) {
+        $max->x = $zoomExtent[min][x];
+        $min->x = $zoomExtent[max][x];
+    }
+    if ($max->y < $min->y) {
+        $max->y = $zoomExtent[min][y];
+        $min->y = $zoomExtent[max][y];
+    }
+
+    $Xside = $max->x - $min->x;
+    $Yside = $max->y - $min->y;
+
+    //correção que procura maior lado do retângulo 
+    if ($Xside > $Yside) {
+        $max->y = $min->y + $Xside;
+    } else {
+        $max->x = $min->x + $Yside;
+    }
+
+    $zoomExtent = new Extent();
+    $zoomExtent->pointMax = $max;
+    $zoomExtent->pointMin = $min;
+    
+    $extent = formatExtent($canvasExtent);
+
+    echo json_encode(MultiPolygonDAO::getInstance()->zoomByExtent($zoomExtent, $extent));
+}
+
+function formatExtent($canvasExtent) {
+
+    $extent = new Extent();
+    
+    if ($canvasExtent != null) {
+        $max = new Point();
+        $max->x = $canvasExtent[pointMax]['x'];
+        $max->y = $canvasExtent[pointMin]['y'];
+
+        $min = new Point();
+        $min->x = $canvasExtent[pointMin]['x'];
+        $min->y = $canvasExtent[pointMax]['y'];
+
+        $extent->pointMax = $max;
+        $extent->pointMin = $min;
+    } else {
+        $extent = null;
+    }
+    return $extent;
+}
+
+?>
